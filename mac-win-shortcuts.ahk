@@ -1,7 +1,7 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 #UseHook True
-#MenuMaskKey vkE8
+A_MenuMaskKey := "vkE8"
 SendMode("Input")
 SetKeyDelay(-1, -1)
 
@@ -109,7 +109,8 @@ ReleaseAltTab(*) {
 #Backspace::SendAndMask("{Delete}")
 
 ; 1Password browser shortcut
-#::SendAndMask("^")
+LWin::SendAndMask("^")
+RWin::SendAndMask("^")
 
 ; Cmd + Q as Alt + F4
 #q::
