@@ -1,46 +1,30 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
-#UseHook True
 A_MenuMaskKey := "vkE8"
-SendMode("Input")
-SetKeyDelay(-1, -1)
-
-global gAltTabActive := false
 
 SendCtrl(combo) {
     Send("^" combo)
-    MaskWin()
+    ReleaseWin()
 }
 
 SendShiftCtrl(combo) {
     Send("^+" combo)
-    MaskWin()
+    ReleaseWin()
 }
 
-SendAndMask(keys) {
+SendAndRelease(keys) {
     Send(keys)
-    MaskWin()
+    ReleaseWin()
 }
 
-IsWinPressed() {
-    return GetKeyState("LWin", "P") || GetKeyState("RWin", "P")
-}
-
-MaskWin() {
-    Send("{Blind}{vkE8}")
-}
-
-ReleaseAltTab(*) {
-    global gAltTabActive
-
-    if IsWinPressed() {
-        return
+ReleaseWin() {
+    if GetKeyState("LWin", "P") {
+        KeyWait("LWin")
     }
-
-    Send("{Blind}{Alt up}")
-    gAltTabActive := false
-    SetTimer(ReleaseAltTab, 0)
-    MaskWin()
+    if GetKeyState("RWin", "P") {
+        KeyWait("RWin")
+    }
+    Send("{Blind}{vkE8}")
 }
 
 ; Copy, paste, cut
@@ -69,20 +53,20 @@ ReleaseAltTab(*) {
 #a::SendCtrl("a")
 
 ; Line start/end
-#Right::SendAndMask("{End}")
-#Left::SendAndMask("{Home}")
+#Right::SendAndRelease("{End}")
+#Left::SendAndRelease("{Home}")
 
 ; Select to line end/start
-#+Right::SendAndMask("+{End}")
-#+Left::SendAndMask("+{Home}")
+#+Right::SendAndRelease("+{End}")
+#+Left::SendAndRelease("+{Home}")
 
 ; Document start/end
-#Up::SendAndMask("^{Home}")
-#Down::SendAndMask("^{End}")
+#Up::SendAndRelease("^{Home}")
+#Down::SendAndRelease("^{End}")
 
 ; Select to document start/end
-#+Up::SendAndMask("^+{Home}")
-#+Down::SendAndMask("^+{End}")
+#+Up::SendAndRelease("^+{Home}")
+#+Down::SendAndRelease("^+{End}")
 
 ; Undo/redo
 #z::SendCtrl("z")
@@ -103,40 +87,50 @@ ReleaseAltTab(*) {
 #Enter::SendCtrl("{Enter}")
 
 ; Screenshot selection
-#+4::SendAndMask("#+s")
+#+4::SendAndRelease("#+s")
 
 ; Forward delete on Mac keyboards
-#Backspace::SendAndMask("{Delete}")
+#Backspace::SendAndRelease("{Delete}")
 
-; Prevent the Start menu from appearing on a lone Cmd press
-LWin::MaskWin()
-RWin::MaskWin()
+; 1Password browser shortcut
+#::SendAndRelease("^")
 
 ; Cmd + Q as Alt + F4
 #q::
 {
     Send("{Alt Down}{F4}{Alt Up}")
-    MaskWin()
+    ReleaseWin()
 }
 
 ; Cmd + M minimizes the active window
 #m::
 {
     WinMinimize("A")
-    MaskWin()
+    ReleaseWin()
 }
 
 ; Alt + Tab while holding Win/Cmd
 #Tab::
 {
-    global gAltTabActive
+    static altDown := false
 
-    if !gAltTabActive {
+    if !altDown {
         Send("{Blind}{Alt down}")
-        gAltTabActive := true
-        SetTimer(ReleaseAltTab, 50)
+        Sleep(50)
+        Send("{Tab}")
+        altDown := true
+    } else {
+        Send("{Tab}")
     }
 
-    Send("{Blind}{Tab}")
-    MaskWin()
+    if GetKeyState("LWin", "P") {
+        KeyWait("LWin")
+    }
+    if GetKeyState("RWin", "P") {
+        KeyWait("RWin")
+    }
+
+    Send("{Alt up}")
+    altDown := false
+    Send("{Blind}{vkE8}")
 }
