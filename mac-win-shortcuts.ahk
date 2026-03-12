@@ -108,9 +108,9 @@ ReleaseAltTab(*) {
 ; Forward delete on Mac keyboards
 #Backspace::SendAndMask("{Delete}")
 
-; 1Password browser shortcut
-LWin::SendAndMask("^")
-RWin::SendAndMask("^")
+; Prevent the Start menu from appearing on a lone Cmd press
+LWin::MaskWin()
+RWin::MaskWin()
 
 ; Cmd + Q as Alt + F4
 #q::
