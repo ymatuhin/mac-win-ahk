@@ -13,12 +13,12 @@ It also includes a workaround for cases where the `Win` key gets logically "stuc
 
 ## Files
 
-- [mac-win-shortcuts.ahk](/Users/ym/Dev/mac-win-shortcuts/mac-win-shortcuts.ahk) - main shortcut script
+- [mac-win-shortcuts.ahk](/Users/ym/Dev/mac-win-ahk/mac-win-shortcuts.ahk) - main shortcut script
 
 ## How to use
 
 1. Install AutoHotkey v2.
-2. Open [mac-win-shortcuts.ahk](/Users/ym/Dev/mac-win-shortcuts/mac-win-shortcuts.ahk) on Windows.
+2. Open [mac-win-shortcuts.ahk](/Users/ym/Dev/mac-win-ahk/mac-win-shortcuts.ahk) on Windows.
 3. Keep the script running in the tray, or add it to Windows startup.
 
 ## Included shortcuts
@@ -39,6 +39,7 @@ It also includes a workaround for cases where the `Win` key gets logically "stuc
 - `Cmd+K` -> `Ctrl+K`
 - `Cmd+,` -> `Ctrl+,`
 - `Cmd+Enter` -> `Ctrl+Enter`
+- `Cmd+Shift+4` -> `Win+Shift+S`
 - `Cmd+Backspace` -> `Delete`
 
 ### Files and windows
@@ -77,5 +78,6 @@ It also includes a workaround for cases where the `Win` key gets logically "stuc
 ## Notes
 
 - The script uses `Win` as the `Cmd` key.
-- `Cmd+Tab` keeps `Alt` held while `Win` is pressed, then releases `Alt` when `Win` is released.
-- `#MenuMaskKey vkE8` is used to reduce `Win` key sticking issues after hotkeys.
+- Hotkeys use a non-blocking `Win` mask, so repeated shortcuts do not hang while the key is still physically held down.
+- `Cmd+Tab` keeps `Alt` held while `Win` is pressed and releases it from a timer as soon as `Win` is released.
+- `#UseHook`, `SendMode("Input")`, and `#MenuMaskKey vkE8` are used to reduce stuck modifier states after hotkeys.

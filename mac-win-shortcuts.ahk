@@ -1,30 +1,46 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
+#UseHook True
 #MenuMaskKey vkE8
+SendMode("Input")
+SetKeyDelay(-1, -1)
+
+global gAltTabActive := false
 
 SendCtrl(combo) {
     Send("^" combo)
-    ReleaseWin()
+    MaskWin()
 }
 
 SendShiftCtrl(combo) {
     Send("^+" combo)
-    ReleaseWin()
+    MaskWin()
 }
 
-SendAndRelease(keys) {
+SendAndMask(keys) {
     Send(keys)
-    ReleaseWin()
+    MaskWin()
 }
 
-ReleaseWin() {
-    if GetKeyState("LWin", "P") {
-        KeyWait("LWin")
-    }
-    if GetKeyState("RWin", "P") {
-        KeyWait("RWin")
-    }
+IsWinPressed() {
+    return GetKeyState("LWin", "P") || GetKeyState("RWin", "P")
+}
+
+MaskWin() {
     Send("{Blind}{vkE8}")
+}
+
+ReleaseAltTab(*) {
+    global gAltTabActive
+
+    if IsWinPressed() {
+        return
+    }
+
+    Send("{Blind}{Alt up}")
+    gAltTabActive := false
+    SetTimer(ReleaseAltTab, 0)
+    MaskWin()
 }
 
 ; Copy, paste, cut
@@ -53,20 +69,20 @@ ReleaseWin() {
 #a::SendCtrl("a")
 
 ; Line start/end
-#Right::SendAndRelease("{End}")
-#Left::SendAndRelease("{Home}")
+#Right::SendAndMask("{End}")
+#Left::SendAndMask("{Home}")
 
 ; Select to line end/start
-#+Right::SendAndRelease("+{End}")
-#+Left::SendAndRelease("+{Home}")
+#+Right::SendAndMask("+{End}")
+#+Left::SendAndMask("+{Home}")
 
 ; Document start/end
-#Up::SendAndRelease("^{Home}")
-#Down::SendAndRelease("^{End}")
+#Up::SendAndMask("^{Home}")
+#Down::SendAndMask("^{End}")
 
 ; Select to document start/end
-#+Up::SendAndRelease("^+{Home}")
-#+Down::SendAndRelease("^+{End}")
+#+Up::SendAndMask("^+{Home}")
+#+Down::SendAndMask("^+{End}")
 
 ; Undo/redo
 #z::SendCtrl("z")
@@ -86,48 +102,40 @@ ReleaseWin() {
 ; Send/line break
 #Enter::SendCtrl("{Enter}")
 
+; Screenshot selection
+#+4::SendAndMask("#+s")
+
 ; Forward delete on Mac keyboards
-#Backspace::SendAndRelease("{Delete}")
+#Backspace::SendAndMask("{Delete}")
 
 ; 1Password browser shortcut
-#::SendAndRelease("^")
+#::SendAndMask("^")
 
 ; Cmd + Q as Alt + F4
 #q::
 {
     Send("{Alt Down}{F4}{Alt Up}")
-    ReleaseWin()
+    MaskWin()
 }
 
 ; Cmd + M minimizes the active window
 #m::
 {
     WinMinimize("A")
-    ReleaseWin()
+    MaskWin()
 }
 
 ; Alt + Tab while holding Win/Cmd
 #Tab::
 {
-    static altDown := false
+    global gAltTabActive
 
-    if !altDown {
+    if !gAltTabActive {
         Send("{Blind}{Alt down}")
-        Sleep(50)
-        Send("{Tab}")
-        altDown := true
-    } else {
-        Send("{Tab}")
+        gAltTabActive := true
+        SetTimer(ReleaseAltTab, 50)
     }
 
-    if GetKeyState("LWin", "P") {
-        KeyWait("LWin")
-    }
-    if GetKeyState("RWin", "P") {
-        KeyWait("RWin")
-    }
-
-    Send("{Alt up}")
-    altDown := false
-    Send("{Blind}{vkE8}")
+    Send("{Blind}{Tab}")
+    MaskWin()
 }
