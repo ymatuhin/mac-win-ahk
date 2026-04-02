@@ -94,4 +94,3 @@ SendKeys(keys) {
 
 ; Cmd + Tab while holding the physical left Win key
 <#Tab::AltTab
-<#+Tab::ShiftAltTab

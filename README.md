@@ -72,9 +72,11 @@ The script is intended for people using an Apple keyboard on Windows who want th
 - `Cmd+Shift+Up` -> `Ctrl+Shift+Home`
 - `Cmd+Shift+Down` -> `Ctrl+Shift+End`
 - `Cmd+Tab` -> `Alt+Tab`
+- `Cmd+Shift+Tab` is not implemented because of AutoHotkey `AltTab` hotkey limitations
 
 ## Notes
 
 - The script does not remap `LWin` to `Ctrl`; it binds explicit hotkeys to the physical left `Win` key.
 - Native `Ctrl` shortcuts stay unchanged.
 - `Cmd+Tab` is handled separately via AutoHotkey's built-in `AltTab` action.
+- `Cmd+Shift+Tab` is omitted because AutoHotkey's special `ShiftAltTab` hotkeys cannot be bound to this `LWin+Shift+Tab` combination without side effects or parser errors.
