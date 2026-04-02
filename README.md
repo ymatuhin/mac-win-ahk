@@ -1,10 +1,8 @@
 # mac-win-shortcuts
 
-AutoHotkey v2 script that remaps common macOS `Cmd` shortcuts to Windows-friendly equivalents.
+AutoHotkey v2 script that remaps the left `Win` key to `Ctrl` and adds a few custom left-`Ctrl` shortcuts for macOS-style behavior.
 
-The script is intended for people using an Apple keyboard on Windows or anyone who wants `Win` to behave more like `Cmd`.
-
-It also includes a workaround for cases where the `Win` key gets logically "stuck" after a shortcut.
+The script is intended for people using an Apple keyboard on Windows who want the left `Win` key to behave like `Ctrl`.
 
 ## Requirements
 
@@ -25,59 +23,33 @@ It also includes a workaround for cases where the `Win` key gets logically "stuc
 
 ### Editing
 
-- `Cmd+C` -> `Ctrl+C`
-- `Cmd+V` -> `Ctrl+V`
-- `Cmd+X` -> `Ctrl+X`
-- `Cmd+A` -> `Ctrl+A`
-- `Cmd+Z` -> `Ctrl+Z`
-- `Cmd+Shift+Z` -> `Ctrl+Shift+Z`
-- `Cmd+F` -> `Ctrl+F`
-- `Cmd+G` -> `Ctrl+G`
-- `Cmd+B` -> `Ctrl+B`
-- `Cmd+I` -> `Ctrl+I`
-- `Cmd+U` -> `Ctrl+U`
-- `Cmd+K` -> `Ctrl+K`
-- `Cmd+,` -> `Ctrl+,`
-- `Cmd+Enter` -> `Ctrl+Enter`
-- `Cmd+Shift+4` -> `Win+Shift+S`
-- `Cmd+Backspace` -> `Delete`
+- `LWin` -> `Left Ctrl`
+- `Ctrl+Shift+4` -> `Win+Shift+S`
+- `Ctrl+Backspace` -> `Delete`
 
 ### Files and windows
 
-- `Cmd+N` -> `Ctrl+N`
-- `Cmd+Shift+N` -> `Ctrl+Shift+N`
-- `Cmd+S` -> `Ctrl+S`
-- `Cmd+Shift+S` -> `Ctrl+Shift+S`
-- `Cmd+O` -> `Ctrl+O`
-- `Cmd+P` -> `Ctrl+P`
-- `Cmd+Q` -> `Alt+F4`
-- `Cmd+M` -> minimize active window
+- `Left Ctrl+Q` -> `Alt+F4`
+- `Left Ctrl+M` -> minimize active window
 
 ### Browser-style shortcuts
 
-- `Cmd+T` -> `Ctrl+T`
-- `Cmd+Shift+T` -> `Ctrl+Shift+T`
-- `Cmd+W` -> `Ctrl+W`
-- `Cmd+Shift+W` -> `Ctrl+Shift+W`
-- `Cmd+R` -> `Ctrl+R`
-- `Cmd+L` -> `Ctrl+L`
-- `Cmd+D` -> `Ctrl+D`
+- Standard `Ctrl+...` shortcuts are available directly because `LWin` is remapped to `Left Ctrl`
 
 ### Navigation
 
-- `Cmd+Left` -> `Home`
-- `Cmd+Right` -> `End`
-- `Cmd+Shift+Left` -> `Shift+Home`
-- `Cmd+Shift+Right` -> `Shift+End`
-- `Cmd+Up` -> `Ctrl+Home`
-- `Cmd+Down` -> `Ctrl+End`
-- `Cmd+Shift+Up` -> `Ctrl+Shift+Home`
-- `Cmd+Shift+Down` -> `Ctrl+Shift+End`
-- `Cmd+Tab` -> `Alt+Tab`
+- `Left Ctrl+Left` -> `Home`
+- `Left Ctrl+Right` -> `End`
+- `Left Ctrl+Shift+Left` -> `Shift+Home`
+- `Left Ctrl+Shift+Right` -> `Shift+End`
+- `Left Ctrl+Up` -> `Ctrl+Home`
+- `Left Ctrl+Down` -> `Ctrl+End`
+- `Left Ctrl+Shift+Up` -> `Ctrl+Shift+Home`
+- `Left Ctrl+Shift+Down` -> `Ctrl+Shift+End`
+- `Left Ctrl+Tab` -> `Alt+Tab`
 
 ## Notes
 
-- The script uses `Win` as the `Cmd` key.
-- Hotkeys use a non-blocking `Win` mask, so repeated shortcuts do not hang while the key is still physically held down.
-- `Cmd+Tab` keeps `Alt` held while `Win` is pressed and releases it from a timer as soon as `Win` is released.
-- `#UseHook`, `SendMode("Input")`, and `#MenuMaskKey vkE8` are used to reduce stuck modifier states after hotkeys.
+- The script remaps only the left `Win` key to `Left Ctrl`.
+- Custom shortcuts now listen only on left `Ctrl`, and the previous `Win` release logic has been removed.
+- Native shortcuts on right `Ctrl` stay unchanged.
