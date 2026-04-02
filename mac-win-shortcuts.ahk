@@ -1,8 +1,6 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 
-global altTabActive := false
-
 *LWin::
 {
     Send("{LControl Down}")
@@ -10,33 +8,11 @@ global altTabActive := false
 
 *LWin Up::
 {
-    global altTabActive
-
-    if altTabActive {
-        Send("{Alt Up}")
-        altTabActive := false
-    }
-
     Send("{LControl Up}")
 }
 
 SendKeys(keys) {
     Send(keys)
-}
-
-SendAltTab(reverse := false) {
-    global altTabActive
-
-    if !altTabActive {
-        Send("{Alt Down}")
-        altTabActive := true
-    }
-
-    if reverse {
-        Send("+{Tab}")
-    } else {
-        Send("{Tab}")
-    }
 }
 
 ; Line start/end
@@ -74,12 +50,4 @@ SendAltTab(reverse := false) {
 }
 
 ; Alt + Tab while holding Ctrl/Cmd
-<^Tab::
-{
-    SendAltTab()
-}
-
-<^+Tab::
-{
-    SendAltTab(true)
-}
+<^Tab::AltTab
