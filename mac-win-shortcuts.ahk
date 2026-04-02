@@ -49,5 +49,5 @@ SendKeys(keys) {
     WinMinimize("A")
 }
 
-; Alt + Tab while holding Ctrl/Cmd
-<^Tab::AltTab
+; Cmd + Tab while holding the physical left Win key
+LWin & Tab::AltTab
