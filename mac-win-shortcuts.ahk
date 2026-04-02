@@ -3,7 +3,22 @@
 
 global altTabActive := false
 
-LWin::LControl
+*LWin::
+{
+    Send("{LControl Down}")
+}
+
+*LWin Up::
+{
+    global altTabActive
+
+    if altTabActive {
+        Send("{Alt Up}")
+        altTabActive := false
+    }
+
+    Send("{LControl Up}")
+}
 
 SendKeys(keys) {
     Send(keys)
@@ -67,14 +82,4 @@ SendAltTab(reverse := false) {
 <^+Tab::
 {
     SendAltTab(true)
-}
-
-~LControl Up::
-{
-    global altTabActive
-
-    if altTabActive {
-        Send("{Alt Up}")
-        altTabActive := false
-    }
 }
