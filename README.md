@@ -1,8 +1,8 @@
 # mac-win-shortcuts
 
-AutoHotkey v2 script that remaps the left `Win` key to `Ctrl` and adds a few custom left-`Ctrl` shortcuts for macOS-style behavior.
+AutoHotkey v2 script that maps common macOS `Cmd` shortcuts directly onto the physical left `Win` key.
 
-The script is intended for people using an Apple keyboard on Windows who want the left `Win` key to behave like `Ctrl`.
+The script is intended for people using an Apple keyboard on Windows who want the left `Win` key to behave like `Cmd` for common shortcuts.
 
 ## Requirements
 
@@ -23,33 +23,58 @@ The script is intended for people using an Apple keyboard on Windows who want th
 
 ### Editing
 
-- `LWin` -> `Left Ctrl`
-- `Ctrl+Shift+4` -> `Win+Shift+S`
-- `Ctrl+Backspace` -> `Delete`
+- `Cmd+C` -> `Ctrl+C`
+- `Cmd+V` -> `Ctrl+V`
+- `Cmd+X` -> `Ctrl+X`
+- `Cmd+A` -> `Ctrl+A`
+- `Cmd+Z` -> `Ctrl+Z`
+- `Cmd+Shift+Z` -> `Ctrl+Shift+Z`
+- `Cmd+F` -> `Ctrl+F`
+- `Cmd+G` -> `Ctrl+G`
+- `Cmd+B` -> `Ctrl+B`
+- `Cmd+I` -> `Ctrl+I`
+- `Cmd+U` -> `Ctrl+U`
+- `Cmd+K` -> `Ctrl+K`
+- `Cmd+,` -> `Ctrl+,`
+- `Cmd+Enter` -> `Ctrl+Enter`
+- `Cmd+Shift+4` -> `Win+Shift+S`
+- `Cmd+Backspace` -> `Delete`
 
 ### Files and windows
 
-- `Left Ctrl+Q` -> `Alt+F4`
-- `Left Ctrl+M` -> minimize active window
+- `Cmd+N` -> `Ctrl+N`
+- `Cmd+Shift+N` -> `Ctrl+Shift+N`
+- `Cmd+S` -> `Ctrl+S`
+- `Cmd+Shift+S` -> `Ctrl+Shift+S`
+- `Cmd+O` -> `Ctrl+O`
+- `Cmd+P` -> `Ctrl+P`
+- `Cmd+Q` -> `Alt+F4`
+- `Cmd+M` -> minimize active window
 
 ### Browser-style shortcuts
 
-- Standard `Ctrl+...` shortcuts are available directly because `LWin` is remapped to `Left Ctrl`
+- `Cmd+T` -> `Ctrl+T`
+- `Cmd+Shift+T` -> `Ctrl+Shift+T`
+- `Cmd+W` -> `Ctrl+W`
+- `Cmd+Shift+W` -> `Ctrl+Shift+W`
+- `Cmd+R` -> `Ctrl+R`
+- `Cmd+L` -> `Ctrl+L`
+- `Cmd+D` -> `Ctrl+D`
 
 ### Navigation
 
-- `Left Ctrl+Left` -> `Home`
-- `Left Ctrl+Right` -> `End`
-- `Left Ctrl+Shift+Left` -> `Shift+Home`
-- `Left Ctrl+Shift+Right` -> `Shift+End`
-- `Left Ctrl+Up` -> `Ctrl+Home`
-- `Left Ctrl+Down` -> `Ctrl+End`
-- `Left Ctrl+Shift+Up` -> `Ctrl+Shift+Home`
-- `Left Ctrl+Shift+Down` -> `Ctrl+Shift+End`
-- `Left Ctrl+Tab` -> `Alt+Tab`
+- `Cmd+Left` -> `Home`
+- `Cmd+Right` -> `End`
+- `Cmd+Shift+Left` -> `Shift+Home`
+- `Cmd+Shift+Right` -> `Shift+End`
+- `Cmd+Up` -> `Ctrl+Home`
+- `Cmd+Down` -> `Ctrl+End`
+- `Cmd+Shift+Up` -> `Ctrl+Shift+Home`
+- `Cmd+Shift+Down` -> `Ctrl+Shift+End`
+- `Cmd+Tab` -> `Alt+Tab`
 
 ## Notes
 
-- The script remaps only the left `Win` key to `Left Ctrl`.
-- Custom shortcuts now listen only on left `Ctrl`, and the previous `Win` release logic has been removed.
-- Native shortcuts on right `Ctrl` stay unchanged.
+- The script does not remap `LWin` to `Ctrl`; it binds explicit hotkeys to the physical left `Win` key.
+- Native `Ctrl` shortcuts stay unchanged.
+- `Cmd+Tab` is handled separately via AutoHotkey's built-in `AltTab` action.
