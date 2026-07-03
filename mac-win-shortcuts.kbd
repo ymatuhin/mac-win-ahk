@@ -13,7 +13,7 @@
 
 ;; Every deflayer below must list exactly these keys, in this order.
 (defsrc
-  lmet tab  spc  ret  bspc
+  lmet tab  spc  ret  bspc caps
   1    2    3    4    5    6    7    8    9    0
   a    b    c    d    f    g    i    k    l    m    n    o
   p    q    r    s    t    u    v    w    x    z    ,
@@ -38,10 +38,14 @@
 
   ;; Cmd+4 = Ctrl+4 (fourth tab), Cmd+Shift+4 = Win+Shift+S (screenshot).
   cmd-4 (fork C-4 M-S-s (lsft rsft))
+
+  ;; Caps Lock = Win+Space (input language switch);
+  ;; Shift+Caps Lock = real Caps Lock.
+  lang (fork M-spc caps (lsft rsft))
 )
 
 (deflayer base
-  @cmd _    _    _    _
+  @cmd _    _    _    _    @lang
   _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    _    _    _    _    _    _
@@ -52,7 +56,7 @@
 ;; holding physical Shift: e.g. Cmd+Shift+Z -> Ctrl+Shift+Z,
 ;; Cmd+Shift+Left -> Shift+Home.
 (deflayer cmd
-  _    @cmd-tab M-spc C-ret del
+  _    @cmd-tab M-s  C-ret del  _
   C-1  C-2  C-3  @cmd-4 C-5 C-6  C-7  C-8  C-9  C-0
   C-a  C-b  C-c  C-d  C-f  C-g  C-i  C-k  C-l  M-down C-n C-o
   C-p  A-f4 C-r  C-s  C-t  C-u  C-v  C-w  C-x  C-z  C-,

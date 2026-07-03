@@ -88,7 +88,9 @@ Hold the left `Win` key as `Cmd`. `Shift` is passed through physically, so every
 
 ### System
 
-- `Cmd+Space` → `Win+Space` (input language switch)
+- `Cmd+Space` → `Win+S` (Windows Search, the Spotlight analog)
+- `Caps Lock` → `Win+Space` (input language switch)
+- `Shift+Caps Lock` → real `Caps Lock`
 
 ## Behavior notes
 
