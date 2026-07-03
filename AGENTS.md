@@ -9,6 +9,7 @@ The project used to be an AutoHotkey v2 script (`mac-win-shortcuts.ahk`, removed
 ## Files
 
 - `mac-win-shortcuts.kbd` — the kanata config, single source of truth
+- `install.ps1` / `uninstall.ps1` — Windows installer scripts (download kanata, install the Interception driver, copy the config to `%LOCALAPPDATA%\kanata`, register a Task Scheduler logon task)
 - `README.md` — user-facing install/usage instructions and the shortcut list
 
 ## Rules
@@ -24,3 +25,4 @@ The project used to be an AutoHotkey v2 script (`mac-win-shortcuts.ahk`, removed
 - `Shift` is intentionally not remapped: `Cmd+Shift+<key>` variants work by physical Shift passing through. Don't add explicit shifted duplicates unless the shifted output differs from the unshifted one (see the `cmd-4` fork for the pattern).
 - The left Win key is a pure layer key (no tap action) — tapping it must NOT open the Start menu. Don't "fix" this with tap-hold; it's deliberate.
 - The `Cmd+Tab` switcher uses a virtual key (`vk-alt`) held until physical Cmd release. The `(on-release release-virtualkey vk-alt)` in the `@cmd` alias is what commits the switcher — keep it if you touch the alias.
+- The exe names inside kanata's `windows-binaries-x64.zip` follow the pattern `kanata_windows_gui_<wintercept|winIOv2>_x64.exe` (verified against v1.11.0). If `install.ps1` breaks on a new release, check the asset layout first. PowerShell scripts can't be executed on this macOS machine — review changes to them extra carefully.
