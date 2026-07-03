@@ -34,7 +34,9 @@
 
   ;; Cmd+Tab: hold Alt virtually and tap Tab. Repeat Tab to cycle;
   ;; hold physical Shift (Cmd+Shift+Tab) to cycle backwards.
-  cmd-tab (multi (on-press press-virtualkey vk-alt) tab)
+  ;; The 20ms delay lets the virtual Alt land before Tab — without it
+  ;; the switcher misses the first Tab press.
+  cmd-tab (macro (on-press press-virtualkey vk-alt) 20 tab)
 
   ;; Cmd+4 = Ctrl+4 (fourth tab), Cmd+Shift+4 = Win+Shift+S (screenshot).
   cmd-4 (fork C-4 M-S-s (lsft rsft))

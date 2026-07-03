@@ -10,6 +10,7 @@ Intended for people using an Apple keyboard (or mac muscle memory) on Windows: `
 
 - [mac-win-shortcuts.kbd](mac-win-shortcuts.kbd) — the kanata config
 - [install.ps1](install.ps1) — automated installer (kanata + Interception driver + autostart)
+- [update.ps1](update.ps1) — applies config changes (validate → copy → restart kanata)
 - [uninstall.ps1](uninstall.ps1) — removes everything the installer set up
 
 ## Requirements
@@ -115,12 +116,12 @@ Hold the left `Win` key as `Cmd`. `Shift` is passed through physically, so every
 
 ## Editing the config
 
-After changing [mac-win-shortcuts.kbd](mac-win-shortcuts.kbd), validate it:
+kanata runs the copy of the config in the install directory (`%LOCALAPPDATA%\kanata`), not the one in the repo. After changing [mac-win-shortcuts.kbd](mac-win-shortcuts.kbd), apply it with:
 
+```powershell
+powershell -ExecutionPolicy Bypass -File update.ps1
 ```
-kanata --cfg mac-win-shortcuts.kbd --check
-```
 
-Every `deflayer` must list exactly the keys of `defsrc`, in the same order. The `gui` variant can live-reload the config from the tray menu.
+It validates the config first (kanata keeps running with the old config if validation fails), then copies it over and restarts kanata.
 
-Note that kanata runs the copy of the config in the install directory, not the one in the repo — re-run `install.ps1` (or copy the `.kbd` to `%LOCALAPPDATA%\kanata` and reload from the tray) to apply changes.
+Every `deflayer` must list exactly the keys of `defsrc`, in the same order.
