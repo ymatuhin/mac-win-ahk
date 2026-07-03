@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
     Installs kanata with the mac-win-shortcuts config.
@@ -39,7 +39,7 @@ $ConfigPath         = Join-Path $InstallDir $ConfigName
 
 $srcConfig = Join-Path $PSScriptRoot $ConfigName
 if (-not (Test-Path $srcConfig)) {
-    throw "$ConfigName not found next to install.ps1 — run the script from a clone/download of the repo."
+    throw "$ConfigName not found next to install.ps1 - run the script from a clone/download of the repo."
 }
 
 $tmp = Join-Path $env:TEMP "kanata-install-$(Get-Random)"
