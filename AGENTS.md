@@ -9,7 +9,7 @@ The project used to be an AutoHotkey v2 script (`mac-win-shortcuts.ahk`, removed
 ## Files
 
 - `mac-win-shortcuts.kbd` — the kanata config, single source of truth
-- `install.ps1` / `update.ps1` / `uninstall.ps1` — Windows scripts: full install (download kanata, install the Interception driver, copy the config to `%LOCALAPPDATA%\kanata`, register a Task Scheduler logon task), apply config changes (validate → copy → restart), and removal
+- `install.ps1` / `update.ps1` / `uninstall.ps1` — Windows scripts: full install (download kanata, copy the config to `%LOCALAPPDATA%\kanata`, register a Task Scheduler logon task), apply config changes (validate → copy → restart), and removal. Default variant is `winIOv2` (driverless); `-Variant wintercept` additionally installs the Interception driver
 - `README.md` — user-facing install/usage instructions and the shortcut list
 
 ## Rules

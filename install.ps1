@@ -3,9 +3,9 @@
 .SYNOPSIS
     Installs kanata with the mac-win-shortcuts config.
 
-    Downloads the latest kanata release, installs the Interception driver
-    (wintercept variant only), copies the config, sets up autostart via
-    Task Scheduler and starts kanata.
+    Downloads the latest kanata release, copies the config, sets up autostart
+    via Task Scheduler and starts kanata. By default no kernel driver is
+    installed - kanata runs on Windows hooks (winIOv2 variant).
 
     Safe to re-run: updates kanata and the config in place.
 
@@ -13,12 +13,12 @@
     powershell -ExecutionPolicy Bypass -File install.ps1
 
 .EXAMPLE
-    powershell -ExecutionPolicy Bypass -File install.ps1 -Variant winIOv2 -NoAutostart
+    powershell -ExecutionPolicy Bypass -File install.ps1 -Variant wintercept -NoAutostart
 #>
 param(
-    # wintercept = Interception kernel driver (works in games), winIOv2 = Windows hooks (no driver)
-    [ValidateSet('wintercept', 'winIOv2')]
-    [string]$Variant = 'wintercept',
+    # winIOv2 = Windows hooks, no driver (default), wintercept = Interception kernel driver (works in games)
+    [ValidateSet('winIOv2', 'wintercept')]
+    [string]$Variant = 'winIOv2',
 
     [string]$InstallDir = "$env:LOCALAPPDATA\kanata",
 
@@ -86,6 +86,14 @@ try {
                 throw "Interception driver installation failed (exit code $($p.ExitCode))."
             }
             $rebootNeeded = $true
+        }
+    }
+    else {
+        # leftover from an earlier wintercept install - the winIOv2 exe never loads it
+        Remove-Item (Join-Path $InstallDir 'interception.dll') -Force -ErrorAction SilentlyContinue
+
+        if (Test-Path 'HKLM:\SYSTEM\CurrentControlSet\Services\keyboard') {
+            Write-Warning 'The Interception driver is still installed but kanata no longer uses it. Remove it with: uninstall.ps1 -RemoveDriver'
         }
     }
 

@@ -4,12 +4,12 @@
 
 Intended for people using an Apple keyboard (or mac muscle memory) on Windows: `Cmd+C`, `Cmd+Tab`, `Cmd+arrows` and friends work the way they do on macOS, while native `Ctrl` shortcuts stay unchanged.
 
-> **Why kanata and not AutoHotkey?** The previous version of this repo was an AutoHotkey v2 script (see git history). AHK works through Windows low-level hooks and injected input, which games and anti-cheat systems ignore, and its modifier juggling causes the `Win` key to get stuck. kanata with the Interception driver remaps keys at the kernel-driver level: applications see the remapped keys as real hardware input, so everything works in games and nothing sticks.
+> **Why kanata and not AutoHotkey?** The previous version of this repo was an AutoHotkey v2 script (see git history). AHK's modifier juggling causes the `Win` key to get stuck and its layer handling is fragile; kanata models the whole keyboard as layers, so `Cmd` can never be left hanging. By default kanata runs driverless (the `winIOv2` variant, Windows hooks) — no kernel driver is installed. If you need remapping inside games, there is an optional Interception-driver mode, see below.
 
 ## Files
 
 - [mac-win-shortcuts.kbd](mac-win-shortcuts.kbd) — the kanata config
-- [install.ps1](install.ps1) — automated installer (kanata + Interception driver + autostart)
+- [install.ps1](install.ps1) — automated installer (kanata + autostart, no driver)
 - [update.ps1](update.ps1) — applies config changes (validate → copy → restart kanata)
 - [uninstall.ps1](uninstall.ps1) — removes everything the installer set up
 
@@ -27,29 +27,38 @@ Intended for people using an Apple keyboard (or mac muscle memory) on Windows: `
    powershell -ExecutionPolicy Bypass -File install.ps1
    ```
 
-3. Reboot if the script asks for it (first-time Interception driver install). kanata starts automatically after login — look for the tray icon.
+3. That's it — no reboot, no driver. kanata starts automatically after login — look for the tray icon.
 
-The script downloads the latest kanata release, installs the [Interception](https://github.com/oblitum/Interception/releases) kernel driver, copies the config to `%LOCALAPPDATA%\kanata`, validates it, and registers a Task Scheduler logon task (elevated, no time limit). Re-running the script updates kanata and the config in place — also run it after every config change.
+The script downloads the latest kanata release, copies the config to `%LOCALAPPDATA%\kanata`, validates it, and registers a Task Scheduler logon task (elevated, no time limit). Re-running the script updates kanata and the config in place — also run it after every config change.
 
 Options:
 
-- `-Variant winIOv2` — skip the Interception driver and use Windows hooks instead (same level as AutoHotkey: fine for regular apps, but games may ignore it, which is the reason this project moved off AHK — use only if you don't want a kernel driver).
+- `-Variant wintercept` — use the [Interception](https://github.com/oblitum/Interception/releases) kernel driver instead of Windows hooks. Remapping then works in games too, but the driver has real downsides (see [Interception driver mode](#interception-driver-mode)) — the default `winIOv2` needs no driver and no reboot.
 - `-NoAutostart` — don't create the logon task.
 - `-InstallDir C:\some\path` — install somewhere other than `%LOCALAPPDATA%\kanata`.
 
 To uninstall:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File uninstall.ps1                # keeps the driver
-powershell -ExecutionPolicy Bypass -File uninstall.ps1 -RemoveDriver  # removes it too
+powershell -ExecutionPolicy Bypass -File uninstall.ps1                # default (driverless) install
+powershell -ExecutionPolicy Bypass -File uninstall.ps1 -RemoveDriver  # also removes the Interception driver
 ```
+
+## Interception driver mode
+
+`-Variant wintercept` swaps Windows hooks for the Interception kernel driver: applications see the remapped keys as real hardware input, so remapping works in games and in elevated windows. It is not the default because of the trade-offs:
+
+- The driver has a **lifetime limit of 10 registered input devices**. Every keyboard/mouse that enumerates burns a slot — and USB hubs (for example the hub built into a monitor) that re-enumerate devices on sleep/wake or on a display power cycle will chew through the limit until input dies. Fixing that means reinstalling the driver.
+- It is an unsigned-by-Microsoft kernel driver, requires a reboot to activate, and some anti-cheat systems dislike it.
+
+See [kanata platform known issues](https://github.com/jtroo/kanata/blob/main/docs/platform-known-issues.adoc) for details.
 
 <details>
 <summary>Manual installation (without the script)</summary>
 
 1. Download `windows-binaries-x64.zip` from the [kanata releases page](https://github.com/jtroo/kanata/releases) and pick **one** executable:
-   - `kanata_windows_gui_wintercept_x64.exe` — **recommended**. Uses the [Interception](https://github.com/oblitum/Interception/releases) kernel driver: works in games and never gets stuck. Requires installing the driver (step 2).
-   - `kanata_windows_gui_winIOv2_x64.exe` — no driver needed. Works through Windows hooks (same level as AutoHotkey), so it is fine for regular apps but games may ignore it.
+   - `kanata_windows_gui_winIOv2_x64.exe` — **recommended**. No driver needed, works through Windows hooks. Fine for regular apps; games may ignore it.
+   - `kanata_windows_gui_wintercept_x64.exe` — uses the [Interception](https://github.com/oblitum/Interception/releases) kernel driver: also works in games, but requires installing the driver (step 2) and has the [downsides listed above](#interception-driver-mode).
 
    The `gui` variants run as a tray icon; `tty` variants run in a terminal window.
 
@@ -61,7 +70,7 @@ powershell -ExecutionPolicy Bypass -File uninstall.ps1 -RemoveDriver  # removes 
 
 3. Put the kanata `.exe` and `mac-win-shortcuts.kbd` in one folder, check the config with `--check`, then run:
    ```
-   kanata_windows_gui_wintercept_x64.exe --cfg mac-win-shortcuts.kbd
+   kanata_windows_gui_winIOv2_x64.exe --cfg mac-win-shortcuts.kbd
    ```
 
 4. Autostart via Task Scheduler: **Create Task** → *Run with highest privileges*, trigger *At log on*, action: the kanata `.exe` with arguments `--cfg <path>\mac-win-shortcuts.kbd`, and uncheck *Stop the task if it runs longer than…* in Settings.
@@ -111,8 +120,8 @@ Hold the left `Win` key as `Cmd`. `Shift` is passed through physically, so every
 
 - **Tapping left `Win` alone no longer opens the Start menu** — it is a pure `Cmd` key now. Use `Ctrl+Esc` or the right `Win` key for the Start menu and native `Win+…` shortcuts.
 - `Cmd+<key>` combos not listed above just type the plain key.
-- The Interception driver has a lifetime limit of 10 registered input devices; if you swap keyboards/mice a lot and input dies, reinstall the driver. See [kanata platform known issues](https://github.com/jtroo/kanata/blob/main/docs/platform-known-issues.adoc).
-- If shortcuts don't work in a specific elevated (admin) app while using the `winIOv2` variant, run kanata as administrator — or switch to `wintercept`, which doesn't have this problem.
+- The default `winIOv2` variant works through Windows hooks, so games with anti-cheat or raw-input handling may ignore the remapping. Use `-Variant wintercept` if you need it there.
+- Shortcuts inside elevated (admin) windows need kanata itself to run elevated — the logon task created by `install.ps1` already does (`Run with highest privileges`).
 
 ## Editing the config
 

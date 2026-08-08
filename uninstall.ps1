@@ -3,7 +3,8 @@
 .SYNOPSIS
     Removes kanata installed by install.ps1: stops it, deletes the autostart
     task and the install directory. Pass -RemoveDriver to also uninstall the
-    Interception driver (requires a reboot).
+    Interception driver (only relevant if you installed with
+    -Variant wintercept; requires a reboot).
 
 .EXAMPLE
     powershell -ExecutionPolicy Bypass -File uninstall.ps1
