@@ -1,85 +1,111 @@
 # mac-win-shortcuts
 
-[kanata](https://github.com/jtroo/kanata) config that makes the physical left `Win` key behave like macOS `Cmd` on Windows.
+A QMK keymap for the **Keychron Q6 HE (ANSI, knob)** that makes the key next to the space bar behave like macOS `Cmd` on Windows.
 
-Intended for people using an Apple keyboard (or mac muscle memory) on Windows: `Cmd+C`, `Cmd+Tab`, `Cmd+arrows` and friends work the way they do on macOS, while native `Ctrl` shortcuts stay unchanged.
+Intended for people using mac muscle memory on Windows: `Cmd+C`, `Cmd+Tab`, `Cmd+arrows` and friends work the way they do on macOS, while native `Ctrl` shortcuts stay unchanged.
 
-> **Why kanata and not AutoHotkey?** The previous version of this repo was an AutoHotkey v2 script (see git history). AHK's modifier juggling causes the `Win` key to get stuck and its layer handling is fragile; kanata models the whole keyboard as layers, so `Cmd` can never be left hanging. By default kanata runs driverless (the `winIOv2` variant, Windows hooks) — no kernel driver is installed. If you need remapping inside games, there is an optional Interception-driver mode, see below.
+> **Why the firmware and not a Windows tool?** Earlier versions of this repo did the same remapping on the PC side — first an AutoHotkey v2 script, then a [kanata](https://github.com/jtroo/kanata) config (both in git history). Anything running on Windows sits behind hooks or a kernel driver: games and anti-cheat ignore hooks, and the Interception driver has a lifetime limit of 10 input devices that a monitor USB hub burns through until input dies. A keymap lives in the keyboard itself, so the remap works in games, in the BIOS, on the lock screen and in UAC windows, survives a Windows reinstall, and needs no background process at all.
+
+## Two ways to set this up
+
+- **[Keychron Launcher](LAUNCHER.md)** — no flashing at all. Launcher rewrites only the keymap stored in the keyboard's EEPROM: the firmware, the bootloader and the Mac layers stay factory, and one reset button undoes everything. Costs the macOS-style `Cmd+Tab` switcher and moves two Shift-conditional shortcuts to other keys.
+- **[Compiled keymap](#build-and-flash)** — full parity with the old kanata config, including the held `Cmd+Tab` switcher. Requires flashing, which replaces the whole firmware image.
+
+If `Cmd+Tab` matters to you, take the compiled route — that behaviour is the one thing Launcher cannot reproduce. Everything below describes it.
 
 ## Files
 
-- [mac-win-shortcuts.kbd](mac-win-shortcuts.kbd) — the kanata config
-- [install.ps1](install.ps1) — automated installer (kanata + autostart, no driver)
-- [update.ps1](update.ps1) — applies config changes (validate → copy → restart kanata)
-- [uninstall.ps1](uninstall.ps1) — removes everything the installer set up
+- [keymap/keymap.c](keymap/keymap.c) — the keymap, single source of truth
+- [keymap/config.h](keymap/config.h) / [keymap/rules.mk](keymap/rules.mk) — five dynamic layers, VIA enabled
+- [build.sh](build.sh) — clones Keychron's QMK fork, copies the keymap in, compiles (and flashes)
+- [check-keymap.py](check-keymap.py) — verifies every layer has the same shape
+- [LAUNCHER.md](LAUNCHER.md) — the same shortcuts set up in Keychron Launcher, without flashing
+- [uninstall.ps1](uninstall.ps1) — removes the old kanata install from Windows (see below)
 
 ## Requirements
 
-- Windows 10/11
-- [kanata](https://github.com/jtroo/kanata/releases) v1.11 or newer (the installer downloads it for you)
+- Keychron Q6 HE, ANSI with knob (`keychron/q6_he/ansi_encoder`). Other variants need the `KEYBOARD` line in [build.sh](build.sh) changed to `iso_encoder` or `jis_encoder` and the `LAYOUT_ansi_108` macro swapped in the keymap.
+- A build machine with the QMK CLI, an ARM compiler and `dfu-util` — see [Install the toolchain](#1-install-the-toolchain). It does not have to be the machine the keyboard is used on; this keymap is built on macOS and used on Windows.
+- The keyboard's Mac/Win slider set to **Win** — that is what selects layer 2 as the base layer.
 
-## Installation
+## Build and flash
 
-1. Clone or [download](https://github.com/ymatuhin/mac-win-ahk/archive/refs/heads/main.zip) this repo on the Windows machine.
-2. Open PowerShell **as administrator** in the repo folder and run:
+### 1. Install the toolchain
 
-   ```powershell
-   powershell -ExecutionPolicy Bypass -File install.ps1
-   ```
+QMK's own tap (`brew install qmk/qmk/qmk`) is the documented route, but Homebrew 6 refuses third-party taps until you run `brew trust qmk/qmk`. These three steps avoid that and were what this keymap was actually built with:
 
-3. That's it — no reboot, no driver. kanata starts automatically after login — look for the tray icon.
-
-The script downloads the latest kanata release, copies the config to `%LOCALAPPDATA%\kanata`, validates it, and registers a Task Scheduler logon task (elevated, no time limit). Re-running the script updates kanata and the config in place — also run it after every config change.
-
-Options:
-
-- `-Variant wintercept` — use the [Interception](https://github.com/oblitum/Interception/releases) kernel driver instead of Windows hooks. Remapping then works in games too, but the driver has real downsides (see [Interception driver mode](#interception-driver-mode)) — the default `winIOv2` needs no driver and no reboot.
-- `-NoAutostart` — don't create the logon task.
-- `-InstallDir C:\some\path` — install somewhere other than `%LOCALAPPDATA%\kanata`.
-
-To uninstall:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File uninstall.ps1                # default (driverless) install
-powershell -ExecutionPolicy Bypass -File uninstall.ps1 -RemoveDriver  # also removes the Interception driver
+```bash
+python3 -m venv ~/.qmk-venv && ~/.qmk-venv/bin/pip install qmk
 ```
 
-## Interception driver mode
+```bash
+brew install dfu-util
+```
 
-`-Variant wintercept` swaps Windows hooks for the Interception kernel driver: applications see the remapped keys as real hardware input, so remapping works in games and in elevated windows. It is not the default because of the trade-offs:
+Then Arm's toolchain — Homebrew's core `arm-none-eabi-gcc` is compiler-only, has no newlib, and fails on `#include <stdint.h>`:
 
-- The driver has a **lifetime limit of 10 registered input devices**. Every keyboard/mouse that enumerates burns a slot — and USB hubs (for example the hub built into a monitor) that re-enumerate devices on sleep/wake or on a display power cycle will chew through the limit until input dies. Fixing that means reinstalling the driver.
-- It is an unsigned-by-Microsoft kernel driver, requires a reboot to activate, and some anti-cheat systems dislike it.
+```bash
+mkdir -p ~/.local/opt && curl -sSL https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-darwin-arm64-arm-none-eabi.tar.xz | tar xJ -C ~/.local/opt
+```
 
-See [kanata platform known issues](https://github.com/jtroo/kanata/blob/main/docs/platform-known-issues.adoc) for details.
+`build.sh` picks up both the venv and `~/.local/opt/arm-gnu-toolchain-*` on its own. There is no need to run `qmk setup` — this repo brings its own checkout.
 
-<details>
-<summary>Manual installation (without the script)</summary>
+### 2. Build
 
-1. Download `windows-binaries-x64.zip` from the [kanata releases page](https://github.com/jtroo/kanata/releases) and pick **one** executable:
-   - `kanata_windows_gui_winIOv2_x64.exe` — **recommended**. No driver needed, works through Windows hooks. Fine for regular apps; games may ignore it.
-   - `kanata_windows_gui_wintercept_x64.exe` — uses the [Interception](https://github.com/oblitum/Interception/releases) kernel driver: also works in games, but requires installing the driver (step 2) and has the [downsides listed above](#interception-driver-mode).
+```bash
+./build.sh
+```
 
-   The `gui` variants run as a tray icon; `tty` variants run in a terminal window.
+First run clones [Keychron's QMK fork](https://github.com/Keychron/qmk_firmware) (branch `2025q3`, the one with Hall Effect support) into `~/qmk_keychron`; set `QMK_DIR` to put it elsewhere. Every run re-copies `keymap/` into the fork, checks the layer shapes and compiles. The result is `keychron_q6_he_ansi_encoder_mac_win.bin` in the checkout root.
 
-2. **Only for the `wintercept` variant** — install the Interception driver:
-   1. Download `Interception.zip` from [oblitum/Interception releases](https://github.com/oblitum/Interception/releases) and unpack it.
-   2. In an **administrator** command prompt run `install-interception.exe /install` (it is in `command line installer\`).
-   3. Reboot.
-   4. Copy `library\x64\interception.dll` from the zip next to the kanata `.exe`.
+### 3. Back up what flashing resets
 
-3. Put the kanata `.exe` and `mac-win-shortcuts.kbd` in one folder, check the config with `--check`, then run:
-   ```
-   kanata_windows_gui_winIOv2_x64.exe --cfg mac-win-shortcuts.kbd
-   ```
+Flashing replaces the whole firmware image, and raising `DYNAMIC_KEYMAP_LAYER_COUNT` to 5 invalidates the EEPROM the old keymap lived in. Per-key Hall Effect actuation, rapid trigger, RGB, Bluetooth pairings and **any macros recorded in Launcher** come back at defaults. Export the current layout from [Keychron Launcher](https://launcher.keychron.com) first, and copy the macro bodies out of its macro tab by hand — the export file does not contain them.
 
-4. Autostart via Task Scheduler: **Create Task** → *Run with highest privileges*, trigger *At log on*, action: the kanata `.exe` with arguments `--cfg <path>\mac-win-shortcuts.kbd`, and uncheck *Stop the task if it runs longer than…* in Settings.
+### 4. Enter bootloader mode
 
-</details>
+Unplug the cable, hold `Esc`, plug the cable back in while still holding `Esc`, then release. The board enumerates as `STM32 BOOTLOADER` / a DFU device — `dfu-util -l` lists it as `0483:df11`. If that does not work, the reset button is on the PCB next to the space bar switch — hold it while connecting the cable.
+
+Flashing is wired-only: the keyboard must be connected by cable, not over Bluetooth or the 2.4 GHz dongle.
+
+### 5. Flash
+
+```bash
+./build.sh flash
+```
+
+Or open the `.bin` in [QMK Toolbox](https://github.com/qmk/qmk_toolbox) once it prints `DFU device connected` and press Flash. Do not unplug the cable while it writes.
+
+A successful run ends with `Erase done` → `Download done` → `File downloaded successfully`. Two lines look alarming and are not:
+
+- `dfuERROR ... Device's firmware is corrupt` before the write. This is the DFU state machine, not a verdict on the image — the STM32 bootloader reports it whenever it was entered without a normal run-time exit. The `Clearing status` line right after resets it to `dfuIDLE` and the write proceeds from a clean state.
+- `Transitioning to dfuMANIFEST state` at the end. That is the leave request; `dfu-util` often falls silent or reports an exit error there, after the image is already written.
+
+Then replug the cable if the keyboard does not come back on its own, and put the Mac/Win slider on **Win**.
+
+### If something goes wrong
+
+The bootloader lives in its own flash region and a keymap cannot damage it, so the recovery is always the same: re-enter bootloader mode with the `Esc` trick and flash something else — this keymap again, or Keychron's stock firmware from the [firmware page](https://www.keychron.com/pages/firmware).
+
+If the keyboard works but the `Cmd` layer does nothing, the old keymap is still in EEPROM: open Launcher and use its keyboard reset, which reloads the keymap from the firmware.
+
+## Layers
+
+Keychron's stock four layers are kept as they are, so the Mac side of the keyboard and the Fn layer keep working:
+
+| # | Layer | Role |
+|---|---|---|
+| 0 | `MAC_BASE` | stock, used when the slider is on Mac |
+| 1 | `MAC_FN` | stock |
+| 2 | `WIN_BASE` | Windows base — the bottom row and `Caps Lock` differ from stock |
+| 3 | `WIN_FN` | stock Fn layer: Bluetooth, 2.4 GHz, RGB, media |
+| 4 | `CMD` | the `Cmd` layer, held by the key next to the space bar |
+
+The `Cmd` layer has to sit **above** `WIN_BASE`: QMK resolves the highest active layer first, so a layer below the base layer would never be reached. That is also why this needs a compiled keymap rather than Keychron Launcher — Launcher only exposes the four stock layers.
 
 ## Included shortcuts
 
-Hold the left `Win` key as `Cmd`. `Shift` is passed through physically, so every `Cmd+Shift+<key>` variant works automatically.
+Hold the key next to the space bar as `Cmd` — the same position `Cmd` has on a Mac. `Shift` is not remapped, so every `Cmd+Shift+<key>` variant works by holding physical Shift.
 
 ### Editing
 
@@ -118,19 +144,31 @@ Hold the left `Win` key as `Cmd`. `Shift` is passed through physically, so every
 
 ## Behavior notes
 
-- **Tapping left `Win` alone no longer opens the Start menu** — it is a pure `Cmd` key now. Use `Ctrl+Esc` or the right `Win` key for the Start menu and native `Win+…` shortcuts.
-- `Cmd+<key>` combos not listed above just type the plain key.
-- The default `winIOv2` variant works through Windows hooks, so games with anti-cheat or raw-input handling may ignore the remapping. Use `-Variant wintercept` if you need it there.
-- Shortcuts inside elevated (admin) windows need kanata itself to run elevated — the logon task created by `install.ps1` already does (`Run with highest privileges`).
+- **Tapping the `Cmd` key alone does nothing** — it is a pure layer key, so the Start menu never opens. The right-hand `Win` key (`RGUI`, right of the space bar) covers native `Win+…` shortcuts.
+- The Windows bottom row is `Ctrl` `Alt` `Cmd` — space — `Win` `Alt` `Fn` `Ctrl`, carried over from the owner's own Launcher layout rather than Keychron's stock `Ctrl` `Win` `Alt`.
+- Four keys that used to hold Launcher macros are back at their stock values — Launchpad, `Home` and `End` on the Mac layer, `F16` on the Windows top row. Launcher's export does not include macro bodies, so they could not be carried over. Write them into [keymap/keymap.c](keymap/keymap.c) as ordinary key sequences if you want them back.
+- `Cmd+<key>` combos not listed above fall through to the base layer and type the plain key.
+- The `Cmd+Tab` switcher works by holding `Alt` between `Tab` presses and releasing it when the `Cmd` layer is released. While the switcher is open, other `Cmd` combos also carry `Alt` — same as the kanata version behaved.
+- Everything above is Windows-only by design. Flip the slider to Mac and you get Keychron's stock Mac layout back, untouched.
 
-## Editing the config
+## Editing the keymap
 
-kanata runs the copy of the config in the install directory (`%LOCALAPPDATA%\kanata`), not the one in the repo. After changing [mac-win-shortcuts.kbd](mac-win-shortcuts.kbd), apply it with:
+Change [keymap/keymap.c](keymap/keymap.c), then:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File update.ps1
+```bash
+python3 check-keymap.py
 ```
 
-It validates the config first (kanata keeps running with the old config if validation fails), then copies it over and restarts kanata.
+Every layer must list exactly the same number of entries in the same order — QMK compiles a short layer without complaint and silently shifts every key after the mistake. Then rebuild and flash with `./build.sh flash`.
 
-Every `deflayer` must list exactly the keys of `defsrc`, in the same order.
+Keychron Launcher can still be used for Hall Effect settings (actuation point, rapid trigger) and RGB. Remapping keys there will overwrite this keymap in EEPROM; reflashing restores it.
+
+## Removing the old kanata install
+
+If this machine still has the kanata setup from earlier versions of this repo, run in an **administrator** PowerShell:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File uninstall.ps1
+```
+
+It stops kanata, removes the `kanata` logon task and deletes `%LOCALAPPDATA%\kanata`. If the [Interception](https://github.com/oblitum/Interception/releases) driver is also still installed, add `-RemoveDriver` and reboot. To confirm it is gone afterwards, `sc.exe query keyboard` should report error 1060 and the keyboard/mouse class `UpperFilters` should list only `kbdclass` / `mouclass`.
